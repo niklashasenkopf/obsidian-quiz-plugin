@@ -6,3 +6,25 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.possibleAnswer {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 10px;
+
+	&:hover {
+		background-color: var(--interactive-hover);
+	}
+}
+
+.possibleAnswer.selected {
+	background-color: var(--interactive-hover);
+}
+
+.possibleAnswer.correct {
+	background-color: rgba(var(--color-green-rgb), 0.2);
+}
+
+.possibleAnswer.incorrect {
+	background-color: rgba(var(--color-red-rgb), 0.2);
+}
