@@ -119,9 +119,11 @@ export class QuizView extends ItemView {
 	}
 
 	private onNext() {
-		let numberOfQuestions = this.loadedQuiz!.questions.length;
-		this.quizState.navigateToNextQuestion(numberOfQuestions);
-		this.reRender();
+		if (this.loadedQuiz) {
+			const numberOfQuestions = this.loadedQuiz.questions.length;
+			this.quizState.navigateToNextQuestion(numberOfQuestions);
+			this.reRender();
+		}
 	}
 
 	private onPrev() {
@@ -130,6 +132,6 @@ export class QuizView extends ItemView {
 	}
 
 	private reRender() {
-		this.displayQuiz(this.loadedQuiz!);
+		if (this.loadedQuiz) this.displayQuiz(this.loadedQuiz);
 	}
 }

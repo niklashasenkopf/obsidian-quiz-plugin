@@ -22,7 +22,7 @@ export default class QuizPlugin extends Plugin {
 	async activateView() {
 		const { workspace } = this.app;
 
-		let leaf: WorkspaceLeaf | null = null;
+		let leaf: WorkspaceLeaf | null;
 		const leaves = workspace.getLeavesOfType(QUIZ_VIEW);
 
 		if (leaves.length > 0) {
@@ -34,7 +34,7 @@ export default class QuizPlugin extends Plugin {
 			await leaf?.setViewState({ type: QUIZ_VIEW, active: true });
 		}
 
-		workspace.revealLeaf(leaf!);
+		if (leaf) await workspace.revealLeaf(leaf);
 	}
 }
 
