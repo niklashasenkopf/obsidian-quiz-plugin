@@ -3,10 +3,14 @@ import {MCQuizDTO} from "../types/MCQuizDTO";
 import {QuizService} from "../services/QuizService";
 import {QuizState} from "../logic/QuizState";
 import {QuizRenderer} from "../logic/QuizRenderer";
+import {mockQuiz} from "../types/mocks/mockQuiz";
+import QuizPlugin from "../../main";
 
 export const QUIZ_VIEW = "quiz-view";
 
 export class QuizView extends ItemView {
+
+	plugin: QuizPlugin
 	quizService: QuizService;
 	quizState: QuizState;
 	quizRenderer: QuizRenderer;
@@ -14,10 +18,11 @@ export class QuizView extends ItemView {
 	resultContainer: HTMLElement | null;
 	loadedQuiz: MCQuizDTO | null;
 
-	constructor(leaf: WorkspaceLeaf) {
+	constructor(leaf: WorkspaceLeaf, plugin: QuizPlugin) {
 		super(leaf);
 		this.quizService = new QuizService("http://localhost:8080");
 		this.quizState = new QuizState();
+		this.plugin = plugin;
 	}
 
 	getViewType(): string {
@@ -30,6 +35,8 @@ export class QuizView extends ItemView {
 
 	async onOpen() {
 		const container = this.containerEl;
+		container.style.maxWidth = "700px";
+		container.style.alignSelf = "center";
 		container.empty();
 
 		// Creating the header
@@ -56,8 +63,8 @@ export class QuizView extends ItemView {
 			() => this.onNext()
 		)
 
-		// this.loadedQuiz = mockQuiz
-		// this.displayQuiz(this.loadedQuiz);
+		this.loadedQuiz = mockQuiz
+		this.displayQuiz(this.loadedQuiz);
 	}
 
 	async onClose() {
@@ -80,11 +87,15 @@ export class QuizView extends ItemView {
 		const content = await this.app.vault.read(activeFile);
 
 		try {
+
+			const difficulty = this.plugin.settings.questionDifficulty;
+			const numQuestions = this.plugin.settings.numberOfQuestions;
+
 			const quiz: MCQuizDTO = await this.quizService.generateQuiz(
 				activeFile.name,
 				content,
-				"EXTREME",
-				5
+				difficulty,
+				numQuestions
 			);
 
 			new Notice(`Generated quiz with ${quiz.questions.length} questions`);
@@ -92,14 +103,19 @@ export class QuizView extends ItemView {
 			// Display the loaded quiz in the view
 			this.displayQuiz(quiz);
 			this.loadedQuiz = quiz;
+
 		} catch (error) {
+
 			console.error(error);
 			new Notice(error.toString());
+
 		} finally {
+
 			if(this.generationButton) {
 				this.generationButton.disabled = false;
 				this.generationButton.textContent = "Generate";
 			}
+
 		}
 	}
 

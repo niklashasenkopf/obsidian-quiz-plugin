@@ -1,13 +1,31 @@
 import {Plugin, WorkspaceLeaf} from 'obsidian';
 import {QUIZ_VIEW, QuizView} from "./src/views/QuizView";
+import {Difficulty} from "./src/types/Difficulty";
+import {QuizSettingsTab} from "./src/views/QuizSettingsTab";
+
+interface QuizPluginSettings {
+	questionDifficulty: Difficulty;
+	numberOfQuestions: number
+}
+
+const DEFAULT_SETTINGS: QuizPluginSettings = {
+	questionDifficulty: Difficulty.EXTREME,
+	numberOfQuestions: 5
+}
 
 
 export default class QuizPlugin extends Plugin {
+	settings: QuizPluginSettings
+
 	async onload() {
+		await this.loadSettings();
+
 		this.registerView(
 			QUIZ_VIEW,
-			(leaf) => new QuizView(leaf)
+			(leaf) => new QuizView(leaf, this)
 		);
+
+		this.addSettingTab(new QuizSettingsTab(this.app, this));
 
 		this.addRibbonIcon('dice', 'Activate View', () => {
 			this.activateView();
@@ -17,6 +35,14 @@ export default class QuizPlugin extends Plugin {
 
 	onunload() {
 
+	}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
 	}
 
 	async activateView() {
