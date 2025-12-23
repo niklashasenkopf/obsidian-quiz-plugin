@@ -5,7 +5,8 @@ export class QuizDashboardRenderer {
 
 	constructor(
 		private readonly container: HTMLElement,
-		private onStartQuiz : (quiz: StoredQuiz) => void
+		private onStartQuiz: (quiz: StoredQuiz) => void,
+		private onDeleteQuiz: (quiz: StoredQuiz) => void
 		) {}
 
 	render(quizzes: StoredQuiz[]) {
@@ -68,6 +69,7 @@ export class QuizDashboardRenderer {
 			setIcon(deleteButton, "trash");
 			deleteButton.createSpan({text: "Delete"});
 			deleteButton.style.gap = "4px";
+			deleteButton.onclick = () => this.onDeleteQuiz(quiz);
 		})
 	}
 }

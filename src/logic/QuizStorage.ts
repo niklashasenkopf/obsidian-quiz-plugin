@@ -36,6 +36,14 @@ export class QuizStorage {
 		return stored;
 	}
 
+	deleteQuiz(quiz: StoredQuiz): void {
+		this.data.quizzes = this.data.quizzes.filter( q => {
+			return !(q.id == quiz.id);
+		})
+
+		this.save();
+	}
+
 	uploadQuizProgress(id: string, scoreInPercent: number, completed: boolean): void {
 		const quiz = this.data.quizzes.find(q => q.id === id);
 		if (!quiz) return;

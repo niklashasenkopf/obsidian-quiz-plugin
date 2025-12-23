@@ -21,6 +21,7 @@ export class QuizView extends ItemView {
 
 
 	generationButton: HTMLButtonElement | null;
+	goBackButton: HTMLButtonElement | null;
 	quizContainer: HTMLElement | null;
 	dashboardContainer: HTMLElement | null;
 	loadedQuiz: MCQuizDTO | null;
@@ -47,9 +48,21 @@ export class QuizView extends ItemView {
 		container.style.alignSelf = "center";
 		container.empty();
 
+		// Creating container for header and "Go Back" button
+		const headerContainer = container.createEl('div');
+		headerContainer.style.display = "flex";
+		headerContainer.style.alignItems = "center";
+		headerContainer.style.justifyContent = "space-between";
+		headerContainer.style.padding = "0px 20px";
+
 		// Creating the header
-		const header = container.createEl('h4', { text: 'Quiz Panel'});
-		header.style.padding = '20px';
+		const header = headerContainer.createEl('h4', { text: 'Quiz Panel'});
+
+		this.goBackButton = headerContainer.createEl('button', { text: 'Go back'});
+		this.goBackButton.style.display = "none";
+		this.goBackButton.onclick = async () => {
+			this.showDashboardView();
+		}
 
 		// Creating the generation button
 		this.generationButton = container.createEl('button', { text: 'Generate'});
@@ -69,7 +82,8 @@ export class QuizView extends ItemView {
 		this.dashboardContainer.style.margin = "20px";
 		this.quizDashboardRenderer = new QuizDashboardRenderer(
 			this.dashboardContainer,
-			(quiz) => this.startStoredQuiz(quiz)
+			(quiz) => this.startStoredQuiz(quiz),
+			(quiz) => this.deleteStoredQuiz(quiz)
 		);
 
 		this.registerEvent(
@@ -183,8 +197,10 @@ export class QuizView extends ItemView {
 	}
 
 	private showDashboardView() {
-		if(this.quizContainer) this.quizContainer.style.display = "none";
-		if(this.dashboardContainer) this.dashboardContainer.style.display = "block";
+		if (this.quizContainer) this.quizContainer.style.display = "none";
+		if (this.dashboardContainer) this.dashboardContainer.style.display = "block";
+		if (this.generationButton) this.generationButton.style.display = "block";
+		if (this.goBackButton) this.goBackButton.style.display = "none";
 	}
 
 	private startStoredQuiz(storedQuiz: StoredQuiz) {
@@ -192,6 +208,13 @@ export class QuizView extends ItemView {
 		this.quizState.resetQuizState();
 		this.showQuizView();
 		this.displayQuiz(this.loadedQuiz);
+		if (this.generationButton) this.generationButton.style.display = "none";
+		if (this.goBackButton) this.goBackButton.style.display = "block";
+	}
+
+	private deleteStoredQuiz(storedQuiz: StoredQuiz) {
+		this.quizStorage.deleteQuiz(storedQuiz);
+		this.refreshDashboard();
 	}
 
 	private onAnswerSelect(index: number) {

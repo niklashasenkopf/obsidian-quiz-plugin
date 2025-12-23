@@ -1,5 +1,5 @@
 export class QuizState {
-	currentIndex: number = 0;
+	currentIndex = 0;
 	answers: Record<number, { selectedIndex: number | null; checked: boolean }> = {};
 
 	selectAnswerForCurrentQuestion(selectedIndex: number): void {
