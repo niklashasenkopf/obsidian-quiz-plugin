@@ -2,6 +2,7 @@ import {Plugin, WorkspaceLeaf} from 'obsidian';
 import {QUIZ_VIEW, QuizView} from "./src/views/QuizView";
 import {Difficulty} from "./src/types/Difficulty";
 import {QuizSettingsTab} from "./src/views/QuizSettingsTab";
+import {QuizStorage} from "./src/logic/QuizStorage";
 
 interface QuizPluginSettings {
 	questionDifficulty: Difficulty;
@@ -16,13 +17,16 @@ const DEFAULT_SETTINGS: QuizPluginSettings = {
 
 export default class QuizPlugin extends Plugin {
 	settings: QuizPluginSettings
+	storage: QuizStorage
 
 	async onload() {
 		await this.loadSettings();
+		this.storage = new QuizStorage(this);
+		await this.storage.load();
 
 		this.registerView(
 			QUIZ_VIEW,
-			(leaf) => new QuizView(leaf, this)
+			(leaf) => new QuizView(leaf, this, this.storage)
 		);
 
 		this.addSettingTab(new QuizSettingsTab(this.app, this));
