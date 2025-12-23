@@ -34,7 +34,12 @@ export class QuizDashboardRenderer {
 				day: "numeric"  // 1–31
 			});
 
-			container1.createEl("p", { text: `Created at ${formattedDate}`});
+			const createdAt = container1.createEl("div");
+			createdAt.style.display = "flex";
+			createdAt.style.alignItems = "center";
+			createdAt.style.gap = "4px";
+			setIcon(createdAt, "calendar");
+			createdAt.createSpan({ text: `${formattedDate}`})
 
 			item.createEl("div", { cls: "separation-line" });
 
@@ -43,16 +48,14 @@ export class QuizDashboardRenderer {
 			container2.style.justifyContent = "center";
 			container2.style.alignItems = "center";
 			let text: string;
-			if(quiz.progress?.completed) {
-				text = `${quiz.progress.score}%`
-			} else {
+			if(quiz.attempt?.inProgress) {
+				text = "In Progress"
+			} else if (!quiz.attempt?.lastCompleted) {
 				text = "Not taken"
+			} else {
+				text = `Completed | Last attempt: ${quiz.attempt.lastCompleted.scorePercent}%`
 			}
 			container2.createEl("p", { text: `${text}`})
-
-			if(quiz.progress?.completed) {
-				container2.createEl("p", { text: `Last attempt: ${quiz.progress.lastAttempt}`})
-			}
 
 			const buttonsContainer = item.createEl("div");
 			buttonsContainer.style.display = "flex";
@@ -61,7 +64,9 @@ export class QuizDashboardRenderer {
 
 			const playButton = buttonsContainer.createEl("button");
 			setIcon(playButton, "play");
-			playButton.createSpan({text: "Take"});
+			playButton.createSpan({
+				text: quiz.attempt?.inProgress ? "Resume" : "Take"
+			});
 			playButton.style.gap = "4px";
 			playButton.onclick = () => this.onStartQuiz(quiz);
 

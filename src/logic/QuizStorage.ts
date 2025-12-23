@@ -44,13 +44,14 @@ export class QuizStorage {
 		this.save();
 	}
 
-	uploadQuizProgress(id: string, scoreInPercent: number, completed: boolean): void {
+	updateQuiz(id: string, updater: (quiz: StoredQuiz) => void): void {
 		const quiz = this.data.quizzes.find(q => q.id === id);
-		if (!quiz) return;
-		quiz.progress = {
-			score: scoreInPercent,
-			completed: completed,
-			lastAttempt: new Date().toISOString()
+		if (!quiz) {
+			console.error("Quiz you attempted to update does not exist");
+			return;
 		}
+
+		updater(quiz);
+		this.save();
 	}
 }

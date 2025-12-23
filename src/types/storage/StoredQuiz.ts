@@ -1,4 +1,5 @@
 import {MCQuizDTO} from "../MCQuizDTO";
+import {QuizAttemptState} from "../QuizAttemptState";
 
 export type StoredQuiz = {
 	id: string;
@@ -6,13 +7,19 @@ export type StoredQuiz = {
 	difficulty: string;
 	createdAt: string;
 	quiz: MCQuizDTO;
-	progress?: {
-		score: number;
-		completed: boolean;
-		lastAttempt?: string
+	attempt?: {
+		lastCompleted?: {
+			scorePercent: number;
+			completedAt: string;
+		},
+		inProgress?: {
+			startedAt: string;
+			state: QuizAttemptState;
+		}
 	};
 }
 
 export interface QuizPluginData {
 	quizzes: StoredQuiz[];
 }
+

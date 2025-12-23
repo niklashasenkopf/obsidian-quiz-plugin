@@ -34,8 +34,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .stored-quiz-container {
-	flex: 1 1 250px;
-	border: 1px solid var(--background-modifier-border);
+	border: 3px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
 	padding: 12px;
 	background-color: var(--background-primary);
@@ -44,13 +43,12 @@ If your plugin does not need CSS, delete this file.
 }
 
 .stored-quiz-container:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 2px 4px var(--background-modifier-box-shadow-hover);
+	border: 3px solid var(--interactive-hover);
 }
 
 .quiz-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	display: flex;
+	flex-direction: column;
 	gap: 12px;
 	overflow: auto;
 }

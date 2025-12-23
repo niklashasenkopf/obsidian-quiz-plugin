@@ -1,15 +1,11 @@
-import {MCQuizDTO} from "../types/MCQuizDTO";
 import {QuizState} from "./QuizState";
+import {StoredQuiz} from "../types/storage/StoredQuiz";
 
 export class QuizSession {
 	constructor(
-		private quiz: MCQuizDTO,
-		private state: QuizState
+		private stored: StoredQuiz,
+		private state: QuizState,
 	) {}
-
-	start() {
-		this.state.resetQuizState();
-	}
 
 	selectAnswer(index: number) {
 		this.state.selectAnswerForCurrentQuestion(index);
@@ -20,7 +16,7 @@ export class QuizSession {
 	}
 
 	next() {
-		this.state.navigateToNextQuestion(this.quiz.questions.length);
+		this.state.navigateToNextQuestion(this.stored.quiz.questions.length);
 	}
 
 	prev() {
@@ -31,7 +27,40 @@ export class QuizSession {
 		return this.state;
 	}
 
-	getQuiz(): MCQuizDTO {
-		return this.quiz;
+	getStoredQuiz(): StoredQuiz {
+		return this.stored;
 	}
+
+
+	isFinished(): boolean {
+		const totalQuestions = this.stored.quiz.questions.length;
+		const answers = this.state.answers;
+
+		for (let i = 0; i < totalQuestions; i++) {
+			if (!answers[i]?.checked) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	getScorePercent(): number {
+		const total = this.stored.quiz.questions.length;
+		let correct = 0;
+
+		for (let i = 0; i < total; i++) {
+			const answer = this.state.answers[i];
+			if (!answer?.checked) continue;
+
+			const question = this.stored.quiz.questions[i];
+			if (answer.selectedIndex === question.correctAnswerIndex) {
+				correct++;
+			}
+		}
+
+		return total === 0 ? 0 : Math.round((correct / total) * 100);
+	}
+
+
 }

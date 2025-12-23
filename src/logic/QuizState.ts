@@ -1,3 +1,5 @@
+import {QuizAttemptState} from "../types/QuizAttemptState";
+
 export class QuizState {
 	currentIndex = 0;
 	answers: Record<number, { selectedIndex: number | null; checked: boolean }> = {};
@@ -35,5 +37,19 @@ export class QuizState {
 	resetQuizState(): void {
 		this.currentIndex = 0;
 		this.answers = {};
+	}
+
+	toAttemptState(): QuizAttemptState {
+		return {
+			currentQuestionIndex: this.currentIndex,
+			answers: this.answers
+		}
+	}
+
+	public static fromAttemptState(state: QuizAttemptState): QuizState {
+		const quizState = new QuizState();
+		quizState.currentIndex = state.currentQuestionIndex;
+		quizState.answers = state.answers;
+		return quizState;
 	}
 }

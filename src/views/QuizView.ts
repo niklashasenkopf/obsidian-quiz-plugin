@@ -6,6 +6,8 @@ import {StoredQuiz} from "../types/storage/StoredQuiz";
 import {QuizController} from "../controllers/QuizController";
 import {QuizViewLayout} from "./QuizViewLayout";
 import {QuizSession} from "../logic/QuizSession";
+import {ConfirmationModal} from "../modals/ConfirmationModal";
+import {QuizFinishedModal} from "../modals/QuizFinishedModal";
 
 export const QUIZ_VIEW = "quiz-view";
 
@@ -41,7 +43,7 @@ export class QuizView extends ItemView {
 		this.layout = new QuizViewLayout(this.containerEl);
 
 		this.layout.goBackButton.onclick = () => {
-			this.setMode(QuizViewMode.Dashboard);
+			this.onReturnToDashboardPressed();
 		}
 
 		this.layout.generationButton.onclick = async () => {
@@ -107,7 +109,7 @@ export class QuizView extends ItemView {
 		if (!this.quizSession || ! this.layout.quizContainer) return;
 
 		this.quizRenderer.render(
-			this.quizSession.getQuiz(),
+			this.quizSession.getStoredQuiz().quiz,
 			this.quizSession.getState()
 		)
 	}
@@ -129,29 +131,114 @@ export class QuizView extends ItemView {
 	}
 
 	private startStoredQuiz(storedQuiz: StoredQuiz) {
+
+		const storedQuizProgressState = storedQuiz.attempt?.inProgress?.state;
+
 		this.quizSession = new QuizSession(
-			storedQuiz.quiz,
-			new QuizState()
+			storedQuiz,
+			storedQuizProgressState ? QuizState.fromAttemptState(storedQuizProgressState) : new QuizState(),
 		)
 
-		this.quizSession?.start()
 		this.setMode(QuizViewMode.Quiz);
 		this.renderSession();
 	}
 
 	private deleteStoredQuiz(storedQuiz: StoredQuiz) {
-		this.quizController.deleteStoredQuiz(storedQuiz);
-		this.refreshDashboard();
+		new ConfirmationModal(
+			this.app,
+			{
+				title: "Delete Quiz",
+				message: "Are you sure that you want to delete the selected quiz?",
+				confirmText: "Delete",
+				cancelText: "Cancel",
+				confirmIcon: "trash",
+				confirmColor: "var(--color-red)",
+				cancelIcon: "x",
+				onConfirm: () => {
+					this.quizController.deleteStoredQuiz(storedQuiz);
+					this.refreshDashboard();
+					new Notice("Quiz deleted successfully");
+				}
+			}
+		).open();
+	}
+
+	private onReturnToDashboardPressed() {
+
+		if (this.checkIfNoQuestionsAnswered()) {
+			this.setMode(QuizViewMode.Dashboard);
+			return;
+		}
+
+		new ConfirmationModal(
+			this.app,
+			{
+				title: "Save Progress ?",
+				message: "You didn't answer all questions of this quiz yet. Do you want to save your progress?",
+				confirmText: "Save",
+				confirmIcon: "save",
+				cancelText: "Don't save",
+				cancelIcon: "x",
+				onConfirm: () => {
+					if (!this.quizSession) return;
+					this.quizController.saveInProgressAttempt(
+						this.quizSession.getStoredQuiz().id,
+						this.quizSession.getState().toAttemptState()
+					)
+					this.setMode(QuizViewMode.Dashboard)
+					new Notice("Persisted quiz progress successfully");
+					this.refreshDashboard();
+				},
+				onCancel: () => {
+					this.setMode(QuizViewMode.Dashboard)
+				}
+			}
+		).open()
+	}
+
+	private checkIfNoQuestionsAnswered(): boolean {
+		if (!this.quizSession) return true; // No quiz loaded, treat as “no answers”
+
+		const answers = this.quizSession.getState().answers;
+
+		// Check if all questions have `checked === false` or `selectedIndex === null`
+		return Object.values(answers).every(answer => !answer.checked && answer.selectedIndex === null);
 	}
 
 	private onAnswerSelect(index: number) {
-		this.quizSession?.selectAnswer(index);
+		if (!this.quizSession) return;
+
+		this.quizSession.selectAnswer(index);
 		this.renderSession();
 	}
 
 	private onCheckAnswer() {
-		this.quizSession?.checkAnswer();
+		if (!this.quizSession) return;
+
+		this.quizSession.checkAnswer();
 		this.renderSession();
+
+		if (this.quizSession.isFinished()) {
+			setTimeout(() => {
+				if (!this.quizSession) return;
+
+				new QuizFinishedModal(
+					this.app,
+					this.quizSession,
+					() => {
+						if (!this.quizSession) return
+
+						this.quizController.completeAttempt(
+							this.quizSession.getStoredQuiz().id,
+							this.quizSession.getScorePercent()
+						);
+
+						this.setMode(QuizViewMode.Dashboard);
+						this.refreshDashboard();
+					}
+				).open();
+			}, 1000);
+		}
 	}
 
 	private onNext() {
