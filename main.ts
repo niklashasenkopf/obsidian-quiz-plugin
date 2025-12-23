@@ -3,6 +3,8 @@ import {QUIZ_VIEW, QuizView} from "./src/views/QuizView";
 import {Difficulty} from "./src/types/Difficulty";
 import {QuizSettingsTab} from "./src/views/QuizSettingsTab";
 import {QuizStorage} from "./src/logic/QuizStorage";
+import {QuizController} from "./src/controllers/QuizController";
+import {QuizService} from "./src/services/QuizService";
 
 interface QuizPluginSettings {
 	questionDifficulty: Difficulty;
@@ -18,15 +20,23 @@ const DEFAULT_SETTINGS: QuizPluginSettings = {
 export default class QuizPlugin extends Plugin {
 	settings: QuizPluginSettings
 	storage: QuizStorage
+	quizController: QuizController
 
 	async onload() {
 		await this.loadSettings();
 		this.storage = new QuizStorage(this);
 		await this.storage.load();
 
+		this.quizController = new QuizController(
+			this.app,
+			this,
+			new QuizService("http://localhost:8080"),
+			this.storage
+		)
+
 		this.registerView(
 			QUIZ_VIEW,
-			(leaf) => new QuizView(leaf, this, this.storage)
+			(leaf) => new QuizView(leaf, this.quizController)
 		);
 
 		this.addSettingTab(new QuizSettingsTab(this.app, this));

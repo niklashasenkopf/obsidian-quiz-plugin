@@ -1,37 +1,32 @@
 import {ItemView, Notice, WorkspaceLeaf} from "obsidian";
-import {MCQuizDTO} from "../types/MCQuizDTO";
-import {QuizService} from "../services/QuizService";
 import {QuizState} from "../logic/QuizState";
 import {QuizRenderer} from "../logic/QuizRenderer";
-import QuizPlugin from "../../main";
-import {QuizStorage} from "../logic/QuizStorage";
 import {QuizDashboardRenderer} from "../logic/QuizDashboardRenderer";
 import {StoredQuiz} from "../types/storage/StoredQuiz";
+import {QuizController} from "../controllers/QuizController";
+import {QuizViewLayout} from "./QuizViewLayout";
+import {QuizSession} from "../logic/QuizSession";
 
 export const QUIZ_VIEW = "quiz-view";
 
+enum QuizViewMode {
+	Dashboard,
+	Quiz
+}
+
 export class QuizView extends ItemView {
 
-	plugin: QuizPlugin
-	quizService: QuizService;
-	quizState: QuizState;
-	quizRenderer: QuizRenderer;
-	quizDashboardRenderer: QuizDashboardRenderer;
-	quizStorage: QuizStorage;
+	private mode: QuizViewMode = QuizViewMode.Dashboard;
+	private quizRenderer: QuizRenderer;
+	private quizDashboardRenderer: QuizDashboardRenderer;
+	private quizController: QuizController;
+	private layout: QuizViewLayout;
+	private quizSession: QuizSession | null = null;
+	private currentFilePath: string | null = null;
 
-
-	generationButton: HTMLButtonElement | null;
-	goBackButton: HTMLButtonElement | null;
-	quizContainer: HTMLElement | null;
-	dashboardContainer: HTMLElement | null;
-	loadedQuiz: MCQuizDTO | null;
-
-	constructor(leaf: WorkspaceLeaf, plugin: QuizPlugin, storage: QuizStorage) {
+	constructor(leaf: WorkspaceLeaf, quizController: QuizController) {
 		super(leaf);
-		this.quizService = new QuizService("http://localhost:8080");
-		this.quizState = new QuizState();
-		this.plugin = plugin;
-		this.quizStorage = storage;
+		this.quizController = quizController
 	}
 
 	getViewType(): string {
@@ -43,204 +38,129 @@ export class QuizView extends ItemView {
 	}
 
 	async onOpen() {
-		const container = this.containerEl;
-		container.style.maxWidth = "700px";
-		container.style.alignSelf = "center";
-		container.empty();
+		this.layout = new QuizViewLayout(this.containerEl);
 
-		// Creating container for header and "Go Back" button
-		const headerContainer = container.createEl('div');
-		headerContainer.style.display = "flex";
-		headerContainer.style.alignItems = "center";
-		headerContainer.style.justifyContent = "space-between";
-		headerContainer.style.padding = "0px 20px";
-
-		// Creating the header
-		const header = headerContainer.createEl('h4', { text: 'Quiz Panel'});
-
-		this.goBackButton = headerContainer.createEl('button', { text: 'Go back'});
-		this.goBackButton.style.display = "none";
-		this.goBackButton.onclick = async () => {
-			this.showDashboardView();
+		this.layout.goBackButton.onclick = () => {
+			this.setMode(QuizViewMode.Dashboard);
 		}
 
-		// Creating the generation button
-		this.generationButton = container.createEl('button', { text: 'Generate'});
-		this.generationButton.classList.add("mod-cta");
-		this.generationButton.style.margin = "0px 20px";
-		this.generationButton.onclick = async () => {
-			const quiz: MCQuizDTO | undefined = await this.generateQuiz();
-			if(quiz) {
+		this.layout.generationButton.onclick = async () => {
+			const quiz = await this.quizController.generateAndStoreQuiz();
+			if (quiz) {
 				new Notice(`Generated quiz with ${quiz.questions.length} questions`);
-				this.storeQuiz(quiz);
 				this.refreshDashboard();
 			}
 		}
 
-		// Create the container for the dashboard
-		this.dashboardContainer = container.createEl("div");
-		this.dashboardContainer.style.margin = "20px";
 		this.quizDashboardRenderer = new QuizDashboardRenderer(
-			this.dashboardContainer,
+			this.layout.dashboardContainer,
 			(quiz) => this.startStoredQuiz(quiz),
 			(quiz) => this.deleteStoredQuiz(quiz)
-		);
-
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", () => {
-				this.refreshDashboard();
-			})
 		)
 
-		// Create container for result display
-		this.quizContainer = container.createEl('div');
-		this.quizContainer.style.margin = "0px 20px";
-
 		this.quizRenderer = new QuizRenderer(
-			this.quizContainer,
+			this.layout.quizContainer,
 			(index) => this.onAnswerSelect(index),
 			() => this.onCheckAnswer(),
 			() => this.onPrev(),
 			() => this.onNext()
 		)
 
+		this.currentFilePath = this.app.workspace.getActiveFile()?.path ?? null;
+
+		this.registerEvent(
+			this.app.workspace.on("file-open", (file) => {
+				this.currentFilePath = file?.path ?? null;
+				this.refreshDashboard();
+			})
+		)
+
 		// this.loadedQuiz = mockQuiz
 		// this.displayQuiz(this.loadedQuiz);
+		this.setMode(QuizViewMode.Dashboard);
+		this.refreshDashboard();
 	}
 
 	async onClose() {
 		// Nothing to clean up so far
 	}
 
-	private storeQuiz(quiz: MCQuizDTO): void {
-		const activeFile = this.app.workspace.getActiveFile();
-		const difficulty = this.plugin.settings.questionDifficulty;
+	private setMode(mode: QuizViewMode) {
+		this.mode = mode;
 
-		if(!activeFile) {
-			new Notice("Quiz cannot be stored, no active file in the workspace");
-			return;
-		}
+		const isQuiz = mode === QuizViewMode.Quiz;
 
-		this.quizStorage.addQuiz(activeFile.path, quiz, difficulty);
+		if (this.layout.quizContainer)
+			this.layout.quizContainer.style.display = isQuiz ? "block" : "none";
 
-		new Notice("Quiz successfully stored");
+		if (this.layout.dashboardContainer)
+			this.layout.dashboardContainer.style.display = isQuiz ? "none" : "block";
+
+		if (this.layout.generationButton)
+			this.layout.generationButton.style.display = isQuiz ? "none" : "block";
+
+		if (this.layout.goBackButton)
+			this.layout.goBackButton.style.display = isQuiz ? "block" : "none";
 	}
 
-	private async generateQuiz(): Promise<MCQuizDTO | undefined> {
-		const activeFile = this.app.workspace.getActiveFile();
+	private renderSession() {
+		if (!this.quizSession || ! this.layout.quizContainer) return;
 
-		if(!activeFile) {
-			new Notice("Please open a file in the workspace first.");
-			return;
-		}
-
-		if(this.generationButton) {
-			this.generationButton.disabled = true;
-			this.generationButton.textContent = "Generating...";
-		}
-
-		const content = await this.app.vault.read(activeFile);
-
-		try {
-
-			const difficulty = this.plugin.settings.questionDifficulty;
-			const numQuestions = this.plugin.settings.numberOfQuestions;
-
-			return await this.quizService.generateQuiz(
-				activeFile.name,
-				content,
-				difficulty,
-				numQuestions
-			);
-
-		} catch (error) {
-
-			console.error(error);
-			new Notice(error.toString());
-
-		} finally {
-
-			if(this.generationButton) {
-				this.generationButton.disabled = false;
-				this.generationButton.textContent = "Generate";
-			}
-
-		}
-	}
-
-	private displayQuiz(quiz: MCQuizDTO) {
-		if (!this.quizContainer) return;
-		this.quizRenderer.render(quiz, this.quizState);
+		this.quizRenderer.render(
+			this.quizSession.getQuiz(),
+			this.quizSession.getState()
+		)
 	}
 
 	private refreshDashboard() {
-		if(!this.dashboardContainer || !this.quizDashboardRenderer) return;
+		if(!this.quizDashboardRenderer) return;
 
-		const activeFile = this.app.workspace.getActiveFile()?.path;
+		this.layout.dashboardContainer.empty();
 
-		this.dashboardContainer.empty();
-
-		if(activeFile) {
-			const loadedQuizzes = this.quizStorage.getQuizzesForFile(activeFile);
+		if(this.currentFilePath) {
+			const loadedQuizzes = this.quizController.getStoredQuizzesForFile(this.currentFilePath);
 			this.quizDashboardRenderer.render(loadedQuizzes);
 		} else {
-			const msg = this.dashboardContainer.createEl("p", {
+			const msg = this.layout.dashboardContainer.createEl("p", {
 				text: "Open a file to view saved quizzes."
 			});
 			msg.style.opacity = "0.7";
 		}
 	}
 
-	private showQuizView() {
-		if (this.dashboardContainer) this.dashboardContainer.style.display = "none";
-		if (this.quizContainer) this.quizContainer.style.display = "block";
-	}
-
-	private showDashboardView() {
-		if (this.quizContainer) this.quizContainer.style.display = "none";
-		if (this.dashboardContainer) this.dashboardContainer.style.display = "block";
-		if (this.generationButton) this.generationButton.style.display = "block";
-		if (this.goBackButton) this.goBackButton.style.display = "none";
-	}
-
 	private startStoredQuiz(storedQuiz: StoredQuiz) {
-		this.loadedQuiz = storedQuiz.quiz;
-		this.quizState.resetQuizState();
-		this.showQuizView();
-		this.displayQuiz(this.loadedQuiz);
-		if (this.generationButton) this.generationButton.style.display = "none";
-		if (this.goBackButton) this.goBackButton.style.display = "block";
+		this.quizSession = new QuizSession(
+			storedQuiz.quiz,
+			new QuizState()
+		)
+
+		this.quizSession?.start()
+		this.setMode(QuizViewMode.Quiz);
+		this.renderSession();
 	}
 
 	private deleteStoredQuiz(storedQuiz: StoredQuiz) {
-		this.quizStorage.deleteQuiz(storedQuiz);
+		this.quizController.deleteStoredQuiz(storedQuiz);
 		this.refreshDashboard();
 	}
 
 	private onAnswerSelect(index: number) {
-		this.quizState.selectAnswerForCurrentQuestion(index);
-		this.reRender();
+		this.quizSession?.selectAnswer(index);
+		this.renderSession();
 	}
 
 	private onCheckAnswer() {
-		this.quizState.markCurrentQuestionAsChecked();
-		this.reRender();
+		this.quizSession?.checkAnswer();
+		this.renderSession();
 	}
 
 	private onNext() {
-		if (this.loadedQuiz) {
-			const numberOfQuestions = this.loadedQuiz.questions.length;
-			this.quizState.navigateToNextQuestion(numberOfQuestions);
-			this.reRender();
-		}
+		this.quizSession?.next();
+		this.renderSession();
 	}
 
 	private onPrev() {
-		this.quizState.navigateToPreviousQuestion();
-		this.reRender();
-	}
-
-	private reRender() {
-		if (this.loadedQuiz) this.displayQuiz(this.loadedQuiz);
+		this.quizSession?.prev();
+		this.renderSession();
 	}
 }
