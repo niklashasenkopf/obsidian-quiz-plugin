@@ -11,9 +11,18 @@ export class QuizDashboardRenderer {
 
 	render(quizzes: StoredQuiz[]) {
 		this.container.empty();
-		this.container.createEl("h4", { text: "Saved Quizzes" })
+		this.container.createEl("h4", { text: "Generated Quizzes" })
 		const quizGrid = this.container.createEl("div", { cls: "quiz-grid"});
-		this.renderQuizItems(quizGrid, quizzes);
+
+		if(quizzes.length > 0) {
+			this.renderQuizItems(quizGrid, quizzes);
+		} else {
+			const empty =
+				this.container.createEl("div", { cls: "empty-disclaimer"});
+			setIcon(empty, "book-dashed");
+			empty.createSpan({ text: "No quizzes created for this file"})
+		}
+
 	}
 
 	renderQuizItems(container: HTMLElement, quizzes: StoredQuiz[]) {

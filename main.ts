@@ -6,7 +6,7 @@ import {QuizStorage} from "./src/logic/QuizStorage";
 import {QuizController} from "./src/controllers/QuizController";
 import {QuizService} from "./src/services/QuizService";
 
-interface QuizPluginSettings {
+export interface QuizPluginSettings {
 	openAIApiKey: string,
 	model: string,
 	questionDifficulty: Difficulty;
@@ -43,7 +43,7 @@ export default class QuizPlugin extends Plugin {
 
 		this.registerView(
 			QUIZ_VIEW,
-			(leaf) => new QuizView(leaf, this.quizController)
+			(leaf) => new QuizView(leaf, this.quizController, this.settings)
 		);
 
 		this.addSettingTab(new QuizSettingsTab(this.app, this));

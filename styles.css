@@ -99,3 +99,13 @@ If your plugin does not need CSS, delete this file.
 	font-style: normal;
 }
 
+.empty-disclaimer {
+	width: -webkit-fill-available;
+	height: 500px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+}
+
