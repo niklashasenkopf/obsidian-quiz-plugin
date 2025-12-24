@@ -7,11 +7,15 @@ import {QuizController} from "./src/controllers/QuizController";
 import {QuizService} from "./src/services/QuizService";
 
 interface QuizPluginSettings {
+	openAIApiKey: string,
+	model: string,
 	questionDifficulty: Difficulty;
 	numberOfQuestions: number
 }
 
-const DEFAULT_SETTINGS: QuizPluginSettings = {
+export const DEFAULT_SETTINGS: QuizPluginSettings = {
+	openAIApiKey: "",
+	model: "gpt-4o-mini",
 	questionDifficulty: Difficulty.EXTREME,
 	numberOfQuestions: 5
 }
@@ -27,10 +31,13 @@ export default class QuizPlugin extends Plugin {
 		this.storage = new QuizStorage(this);
 		await this.storage.load();
 
+		const apiKey = this.settings.openAIApiKey;
+		const model = this.settings.model;
+
 		this.quizController = new QuizController(
 			this.app,
 			this,
-			new QuizService("http://localhost:8080"),
+			new QuizService(apiKey, model),
 			this.storage
 		)
 

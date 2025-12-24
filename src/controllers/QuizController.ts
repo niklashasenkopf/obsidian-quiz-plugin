@@ -1,10 +1,10 @@
 import {App, Notice} from "obsidian";
-import {QuizService} from "../services/QuizService";
 import {QuizStorage} from "../logic/QuizStorage";
 import {MCQuizDTO} from "../types/MCQuizDTO";
 import QuizPlugin from "../../main";
 import {StoredQuiz} from "../types/storage/StoredQuiz";
 import {QuizAttemptState} from "../types/QuizAttemptState";
+import {QuizService} from "../services/QuizService";
 
 export class QuizController {
 	constructor(
@@ -24,7 +24,6 @@ export class QuizController {
 		const content = await this.app.vault.read(activeFile);
 
 		const quiz = await this.quizService.generateQuiz(
-			activeFile.name,
 			content,
 			this.plugin.settings.questionDifficulty,
 			this.plugin.settings.numberOfQuestions

@@ -1,29 +1,34 @@
-import {MCQuizDTO} from "../types/MCQuizDTO";
+import {QuizGenerationClient} from "./QuizGenerationClient";
+import {QuizPromptBuilder} from "./QuizPromptBuilder";
+import {Difficulty} from "../types/Difficulty";
+import {MCQuizSchema} from "../ai/MCQuizSchema";
+import {MCQuizDTO} from "../ai/MCQuizSchema";
 
 export class QuizService {
-	constructor(private baseUrl: string) {}
+
+	private client: QuizGenerationClient;
+
+	constructor(
+		apiKey: string,
+		private model: string
+	) {
+		this.client = new QuizGenerationClient(apiKey);
+	}
 
 	async generateQuiz(
-		filename: string,
 		content: string,
-		difficulty: string,
+		difficulty: Difficulty,
 		numQuestions: number
 	): Promise<MCQuizDTO> {
-		const formData: FormData = new FormData();
-		formData.append("file", new Blob([content], {type: "text/markdown"}), filename);
-		formData.append("difficulty", difficulty);
-		formData.append("numQuestions", numQuestions.toString());
 
+		const systemPrompt = QuizPromptBuilder.buildSystemPrompt(difficulty);
+		const userPrompt = QuizPromptBuilder.buildUserPrompt(numQuestions, 4, content);
 
-		const result = await fetch(`${this.baseUrl}/mcQuestion/createQuiz`, {
-			method: "POST",
-			body: formData
-		});
-
-		if (!result.ok) {
-			throw new Error(result.statusText);
-		}
-
-		return (await result.json()) as MCQuizDTO;
+		return await this.client.generateJson(
+			this.model,
+			systemPrompt,
+			userPrompt,
+			MCQuizSchema
+		)
 	}
 }
