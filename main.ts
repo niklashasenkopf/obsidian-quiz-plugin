@@ -41,7 +41,7 @@ export default class QuizPlugin extends Plugin {
 
 		this.addSettingTab(new QuizSettingsTab(this.app, this));
 
-		this.addRibbonIcon('dice', 'Activate View', () => {
+		this.addRibbonIcon('wallet-cards', 'Show Quiz Panel', () => {
 			this.activateView();
 		})
 

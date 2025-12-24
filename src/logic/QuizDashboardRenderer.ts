@@ -20,20 +20,30 @@ export class QuizDashboardRenderer {
 		quizzes.forEach(quiz => {
 			const item = container.createEl("div", { cls: "stored-quiz-container"});
 
-			const difficulty = item.createEl("p", { text: quiz.difficulty });
-			difficulty.style.fontWeight = "bold";
-			difficulty.style.margin = "4px 0px";
+			item.createEl("p", { text: quiz.difficulty, cls: ["difficulty", quiz.difficulty.toLowerCase()]});
 
 			const container1 = item.createEl("div");
 			container1.style.display = "flex";
 			container1.style.justifyContent = "space-between";
 			container1.style.alignItems = "center"
 			container1.createEl("p", { text: `${quiz.quiz.questions.length} questions`});
+
+			const scoreInPercent = quiz.attempt?.lastCompleted?.scorePercent.toString();
+
+			let scoreText: string;
+			if (scoreInPercent) {
+				scoreText = `${scoreInPercent}%`
+			} else {
+				scoreText = ""
+			}
+
+			const scoreElem = container1.createEl("div", { text:  scoreText, cls: "status text"});
+			if (!scoreInPercent) scoreElem.style.display = "none";
+
 			const formattedDate = new Date(quiz.createdAt).toLocaleDateString("en-US", {
 				month: "short", // "Jan", "Feb", "Mar", etc.
 				day: "numeric"  // 1–31
 			});
-
 			const createdAt = container1.createEl("div");
 			createdAt.style.display = "flex";
 			createdAt.style.alignItems = "center";
@@ -43,19 +53,16 @@ export class QuizDashboardRenderer {
 
 			item.createEl("div", { cls: "separation-line" });
 
-			const container2 = item.createEl("div");
-			container2.style.display = "flex";
-			container2.style.justifyContent = "center";
-			container2.style.alignItems = "center";
+			const container2 = item.createEl("div", { cls: "status"});
 			let text: string;
 			if(quiz.attempt?.inProgress) {
 				text = "In Progress"
 			} else if (!quiz.attempt?.lastCompleted) {
 				text = "Not taken"
 			} else {
-				text = `Completed | Last attempt: ${quiz.attempt.lastCompleted.scorePercent}%`
+				text = `Completed`
 			}
-			container2.createEl("p", { text: `${text}`})
+			container2.createEl("p", { text: `${text}`, cls: "status"})
 
 			const buttonsContainer = item.createEl("div");
 			buttonsContainer.style.display = "flex";

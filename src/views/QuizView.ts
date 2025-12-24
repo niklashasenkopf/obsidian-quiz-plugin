@@ -1,4 +1,4 @@
-import {ItemView, Notice, WorkspaceLeaf} from "obsidian";
+import {IconName, ItemView, Notice, WorkspaceLeaf} from "obsidian";
 import {QuizState} from "../logic/QuizState";
 import {QuizRenderer} from "../logic/QuizRenderer";
 import {QuizDashboardRenderer} from "../logic/QuizDashboardRenderer";
@@ -39,6 +39,10 @@ export class QuizView extends ItemView {
 		return "Quiz View";
 	}
 
+	getIcon(): IconName {
+		return "wallet-cards"
+	}
+
 	async onOpen() {
 		this.layout = new QuizViewLayout(this.containerEl);
 
@@ -47,11 +51,24 @@ export class QuizView extends ItemView {
 		}
 
 		this.layout.generationButton.onclick = async () => {
-			const quiz = await this.quizController.generateAndStoreQuiz();
-			if (quiz) {
-				new Notice(`Generated quiz with ${quiz.questions.length} questions`);
-				this.refreshDashboard();
+			const button = this.layout.generationButton;
+			button.disabled = true;
+			button.setText("Generating...");
+
+			try {
+				const quiz = await this.quizController.generateAndStoreQuiz();
+				if (quiz) {
+					new Notice(`Generated quiz with ${quiz.questions.length} questions`);
+					this.refreshDashboard();
+				}
+			} catch (err) {
+				console.error(err);
+				new Notice("Error generating quiz");
+			} finally {
+				button.disabled = false;
+				button.setText("Generate Quiz")
 			}
+
 		}
 
 		this.quizDashboardRenderer = new QuizDashboardRenderer(

@@ -38,7 +38,8 @@ export class QuizRenderer {
 		});
 
 		this.container.createEl("p", {
-			text: question.question
+			text: question.question,
+			cls: "question-text"
 		});
 	}
 
@@ -49,7 +50,7 @@ export class QuizRenderer {
 			const answerObject = this.container.createEl(
 				"p",
 				{
-					text: `${idx + 1}. ${answer}`,
+					text: `${answer}`,
 					cls: 'possibleAnswer'
 				}
 			);

@@ -30,7 +30,7 @@ export class QuizViewLayout {
 
 		// Generate button
 		this.generationButton = container.createEl("button", {
-			text: "Generate",
+			text: "Generate Quiz",
 		});
 		this.generationButton.classList.add("mod-cta");
 		this.generationButton.style.margin = "0px 20px";
