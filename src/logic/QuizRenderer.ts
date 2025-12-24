@@ -1,5 +1,5 @@
-import {MCQuizDTO} from "../types/MCQuizDTO";
-import {QuizState} from "./QuizState";
+import type {MCQuizDTO} from "../types/MCQuizDTO";
+import type {QuizState} from "./QuizState";
 
 export class QuizRenderer {
 	private container: HTMLElement;
@@ -74,13 +74,11 @@ export class QuizRenderer {
 	}
 
 	renderButtons() {
-		const buttonContainer = this.container.createEl("div");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.alignItems = "center";
-		buttonContainer.style.justifyContent = "space-between"
+		const buttonContainer
+			= this.container.createEl("div", { cls: ["flex-align-center", "flex-justify-between"]});
 
 		// Check Answer
-		const checkButton = buttonContainer.createEl("button", { text: "Check Answer"});
+		const checkButton = buttonContainer.createEl("button", { text: "Check answer"});
 		checkButton.onclick = this.onCheckAnswer;
 
 		// Navigation
@@ -96,9 +94,8 @@ export class QuizRenderer {
 		// Next Question
 		const next = quizNavigation.createEl(
 			'button',
-			{ text: "Next"}
+			{ text: "Next", cls: "ml-8" }
 		);
-		next.style.marginLeft = "8px";
 		next.onclick = () => this.onNext();
 	}
 }

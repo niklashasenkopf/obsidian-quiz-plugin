@@ -1,7 +1,7 @@
 import {OpenAI} from "openai";
 import {Notice} from "obsidian";
 import {zodTextFormat} from "openai/helpers/zod";
-import {ZodType} from "zod";
+import type {ZodType} from "zod";
 
 export class QuizGenerationClient {
 	private client: OpenAI

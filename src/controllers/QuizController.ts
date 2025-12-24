@@ -1,11 +1,12 @@
-import {App, Notice} from "obsidian";
-import {QuizStorage} from "../logic/QuizStorage";
-import {MCQuizDTO} from "../types/MCQuizDTO";
-import QuizPlugin from "../../main";
-import {StoredQuiz} from "../types/storage/StoredQuiz";
-import {QuizAttemptState} from "../types/QuizAttemptState";
-import {QuizService} from "../services/QuizService";
-import {QuizGenerationOptions} from "../modals/PreGenerationModal";
+import type {App} from "obsidian";
+import { Notice} from "obsidian";
+import type {QuizStorage} from "../logic/QuizStorage";
+import type {MCQuizDTO} from "../types/MCQuizDTO";
+import type QuizPlugin from "../../main";
+import type {StoredQuiz} from "../types/storage/StoredQuiz";
+import type {QuizAttemptState} from "../types/QuizAttemptState";
+import type {QuizService} from "../services/QuizService";
+import type {QuizGenerationOptions} from "../modals/PreGenerationModal";
 
 export class QuizController {
 	constructor(

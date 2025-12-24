@@ -10,18 +10,17 @@ export class QuizViewLayout {
 	constructor(container: HTMLElement) {
 		this.container = container;
 		container.empty();
-		container.style.maxWidth = "700px";
-		container.style.alignSelf = "center";
+		container.setCssProps({
+			"max-width": "700px",
+			"align-self": "center"
+		})
 
 		// Header
-		this.headerContainer = container.createEl("div");
-		this.headerContainer.style.display = "flex";
-		this.headerContainer.style.alignItems = "center";
-		this.headerContainer.style.justifyContent = "space-between";
-		this.headerContainer.style.padding = "0px 20px";
+		this.headerContainer
+			= container.createEl("div", { cls: ["flex-align-center", "flex-justify-between", "p-sides-20"]});
 
 		this.header = this.headerContainer.createEl("h4", {
-			text: "Quiz Panel",
+			text: "Quiz panel",
 		});
 
 		this.goBackButton = this.headerContainer.createEl("button", {
@@ -30,17 +29,14 @@ export class QuizViewLayout {
 
 		// Generate button
 		this.generationButton = container.createEl("button", {
-			text: "Generate Quiz",
+			text: "Generate quiz",
+			cls: ["mod-cta", "m-sides-20"]
 		});
-		this.generationButton.classList.add("mod-cta");
-		this.generationButton.style.margin = "0px 20px";
 
 		// Dashboard
-		this.dashboardContainer = container.createEl("div");
-		this.dashboardContainer.style.margin = "20px";
+		this.dashboardContainer = container.createEl("div", { cls: "m-20"});
 
 		// Quiz container
-		this.quizContainer = container.createEl("div");
-		this.quizContainer.style.margin = "0px 20px";
+		this.quizContainer = container.createEl("div", { cls: "m-sides-20" });
 	}
 }

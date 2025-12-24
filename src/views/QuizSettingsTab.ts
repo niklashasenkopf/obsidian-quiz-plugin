@@ -1,5 +1,7 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
-import QuizPlugin, {DEFAULT_SETTINGS} from "../../main";
+import type {App} from "obsidian";
+import { PluginSettingTab, Setting} from "obsidian";
+import type QuizPlugin from "../../main";
+import {DEFAULT_SETTINGS} from "../../main";
 import {Difficulty} from "../types/Difficulty";
 
 export class QuizSettingsTab extends PluginSettingTab {
@@ -20,7 +22,6 @@ export class QuizSettingsTab extends PluginSettingTab {
 			.setDesc("Your API key is stored locally and never sent anywhere else.")
 			.addText(text => {
 				text
-					.setPlaceholder("sk-...")
 					.setValue(this.plugin.settings.openAIApiKey)
 					.onChange(async (value) => {
 						this.plugin.settings.openAIApiKey = value.trim();
@@ -44,7 +45,7 @@ export class QuizSettingsTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName('Question Difficulty')
+			.setName('Question difficulty')
 			.setDesc('Difficulty of the generated quiz questions')
 			.addDropdown(dropdown => {
 				Object.values(Difficulty).forEach(value => {
@@ -60,7 +61,7 @@ export class QuizSettingsTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName('Number Of Questions')
+			.setName('Number of questions')
 			.setDesc('Number of generated questions per quiz')
 			.addDropdown(dropdown => {
 				const options = Array.from({ length: 10 }, (_, i) => i + 1); // 1..10

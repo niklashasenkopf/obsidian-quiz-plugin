@@ -1,15 +1,17 @@
-import {IconName, ItemView, Notice, WorkspaceLeaf} from "obsidian";
+import type {IconName, WorkspaceLeaf} from "obsidian";
+import { ItemView, Notice} from "obsidian";
 import {QuizState} from "../logic/QuizState";
 import {QuizRenderer} from "../logic/QuizRenderer";
 import {QuizDashboardRenderer} from "../logic/QuizDashboardRenderer";
-import {StoredQuiz} from "../types/storage/StoredQuiz";
-import {QuizController} from "../controllers/QuizController";
+import type {StoredQuiz} from "../types/storage/StoredQuiz";
+import type {QuizController} from "../controllers/QuizController";
 import {QuizViewLayout} from "./QuizViewLayout";
 import {QuizSession} from "../logic/QuizSession";
 import {ConfirmationModal} from "../modals/ConfirmationModal";
 import {QuizFinishedModal} from "../modals/QuizFinishedModal";
-import {PreGenerationModal, QuizGenerationOptions} from "../modals/PreGenerationModal";
-import {QuizPluginSettings} from "../../main";
+import type { QuizGenerationOptions} from "../modals/PreGenerationModal";
+import {PreGenerationModal} from "../modals/PreGenerationModal";
+import type {QuizPluginSettings} from "../../main";
 
 export const QUIZ_VIEW = "quiz-view";
 
@@ -43,7 +45,7 @@ export class QuizView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return "Quiz View";
+		return "Quiz view";
 	}
 
 	getIcon(): IconName {
@@ -133,7 +135,7 @@ export class QuizView extends ItemView {
 			const msg = this.layout.dashboardContainer.createEl("p", {
 				text: "Open a file to view saved quizzes."
 			});
-			msg.style.opacity = "0.7";
+			msg.setCssProps({ opacity: "0.7"});
 		}
 	}
 
@@ -234,7 +236,7 @@ export class QuizView extends ItemView {
 			new Notice("Error generating quiz");
 		} finally {
 			button.disabled = false;
-			button.setText("Generate Quiz")
+			button.setText("Generate quiz")
 		}
 	}
 
@@ -292,9 +294,4 @@ export class QuizView extends ItemView {
 		this.quizSession?.prev();
 		this.renderSession();
 	}
-
-	private estimateTokensFromText(text: string): number {
-		return Math.ceil(text.length / 4);
-	}
-
 }

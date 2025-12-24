@@ -1,8 +1,8 @@
 import {QuizGenerationClient} from "./QuizGenerationClient";
 import {QuizPromptBuilder} from "./QuizPromptBuilder";
-import {Difficulty} from "../types/Difficulty";
+import type {Difficulty} from "../types/Difficulty";
 import {MCQuizSchema} from "../ai/MCQuizSchema";
-import {MCQuizDTO} from "../ai/MCQuizSchema";
+import type {MCQuizDTO} from "../ai/MCQuizSchema";
 
 export class QuizService {
 

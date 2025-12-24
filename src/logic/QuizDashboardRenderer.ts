@@ -1,4 +1,4 @@
-import {StoredQuiz} from "../types/storage/StoredQuiz";
+import type {StoredQuiz} from "../types/storage/StoredQuiz";
 import {setIcon} from "obsidian";
 
 export class QuizDashboardRenderer {
@@ -11,14 +11,14 @@ export class QuizDashboardRenderer {
 
 	render(quizzes: StoredQuiz[]) {
 		this.container.empty();
-		this.container.createEl("h4", { text: "Generated Quizzes" })
-		const quizGrid = this.container.createEl("div", { cls: "quiz-grid"});
+		this.container.createEl("h4", { text: "Generated quizzes" })
+		const quizGrid = this.container.createEl("div", { cls: "dashboard-quizzes"});
 
 		if(quizzes.length > 0) {
 			this.renderQuizItems(quizGrid, quizzes);
 		} else {
 			const empty =
-				this.container.createEl("div", { cls: "empty-disclaimer"});
+				this.container.createEl("div", { cls: "dashboard-empty-disclaimer" });
 			setIcon(empty, "book-dashed");
 			empty.createSpan({ text: "No quizzes created for this file"})
 		}
@@ -27,14 +27,13 @@ export class QuizDashboardRenderer {
 
 	renderQuizItems(container: HTMLElement, quizzes: StoredQuiz[]) {
 		quizzes.forEach(quiz => {
-			const item = container.createEl("div", { cls: "stored-quiz-container"});
+			const item = container.createEl("div", { cls: "dashboard-item-container"});
 
 			item.createEl("p", { text: quiz.difficulty, cls: ["difficulty", quiz.difficulty.toLowerCase()]});
 
-			const container1 = item.createEl("div");
-			container1.style.display = "flex";
-			container1.style.justifyContent = "space-between";
-			container1.style.alignItems = "center"
+			const container1
+				= item.createEl("div", { cls: ["flex-justify-between", "flex-align-center"]});
+
 			container1.createEl("p", { text: `${quiz.quiz.questions.length} questions`});
 
 			const scoreInPercent = quiz.attempt?.lastCompleted?.scorePercent.toString();
@@ -46,50 +45,52 @@ export class QuizDashboardRenderer {
 				scoreText = ""
 			}
 
-			const scoreElem = container1.createEl("div", { text:  scoreText, cls: "status text"});
-			if (!scoreInPercent) scoreElem.style.display = "none";
+			const scoreElem
+				= container1.createEl("div",
+				{ text: scoreText, cls: ["flex-center", "dashboard-item-last-score"]});
+			if (!scoreInPercent) scoreElem.setCssProps({ display: "none" });
 
 			const formattedDate = new Date(quiz.createdAt).toLocaleDateString("en-US", {
-				month: "short", // "Jan", "Feb", "Mar", etc.
-				day: "numeric"  // 1–31
+				month: "short",
+				day: "numeric"
 			});
-			const createdAt = container1.createEl("div");
-			createdAt.style.display = "flex";
-			createdAt.style.alignItems = "center";
-			createdAt.style.gap = "4px";
+			const createdAt
+				= container1.createEl("div", { cls: ["flex-align-center", "gap4"] });
 			setIcon(createdAt, "calendar");
 			createdAt.createSpan({ text: `${formattedDate}`})
 
 			item.createEl("div", { cls: "separation-line" });
 
-			const container2 = item.createEl("div", { cls: "status"});
+			const container2 = item.createEl("div", { cls: ["font-italic", "flex-center"] });
 			let text: string;
 			if(quiz.attempt?.inProgress) {
 				text = "In Progress"
 			} else if (!quiz.attempt?.lastCompleted) {
 				text = "Not taken"
 			} else {
-				text = `Completed`
+				text = "Completed"
 			}
 			container2.createEl("p", { text: `${text}`, cls: "status"})
 
 			const buttonsContainer = item.createEl("div");
-			buttonsContainer.style.display = "flex";
-			buttonsContainer.style.alignItems = "center";
-			buttonsContainer.style.justifyContent = "space-between";
+			buttonsContainer.setCssProps({
+				display: "flex",
+				"align-items": "center",
+				"justify-content": "space-between"
+			});
 
-			const playButton = buttonsContainer.createEl("button");
+			const playButton
+				= buttonsContainer.createEl("button", { cls: ["gap4", "mod-cta"] });
 			setIcon(playButton, "play");
 			playButton.createSpan({
 				text: quiz.attempt?.inProgress ? "Resume" : "Take"
 			});
-			playButton.style.gap = "4px";
 			playButton.onclick = () => this.onStartQuiz(quiz);
 
-			const deleteButton = buttonsContainer.createEl("button");
+			const deleteButton
+				= buttonsContainer.createEl("button", { cls: ["gap4", "mod-warning"] });
 			setIcon(deleteButton, "trash");
 			deleteButton.createSpan({text: "Delete"});
-			deleteButton.style.gap = "4px";
 			deleteButton.onclick = () => this.onDeleteQuiz(quiz);
 		})
 	}

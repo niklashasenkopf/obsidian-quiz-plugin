@@ -1,5 +1,5 @@
-import {MCQuizDTO} from "../MCQuizDTO";
-import {QuizAttemptState} from "../QuizAttemptState";
+import type {MCQuizDTO} from "../MCQuizDTO";
+import type {QuizAttemptState} from "../QuizAttemptState";
 
 export type StoredQuiz = {
 	id: string;

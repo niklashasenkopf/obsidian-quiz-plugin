@@ -1,4 +1,4 @@
-import {QuizAttemptState} from "../types/QuizAttemptState";
+import type {QuizAttemptState} from "../types/QuizAttemptState";
 
 export class QuizState {
 	currentIndex = 0;

@@ -1,4 +1,5 @@
-import {Plugin, WorkspaceLeaf} from 'obsidian';
+import type { WorkspaceLeaf} from 'obsidian';
+import {Plugin} from 'obsidian';
 import {QUIZ_VIEW, QuizView} from "./src/views/QuizView";
 import {Difficulty} from "./src/types/Difficulty";
 import {QuizSettingsTab} from "./src/views/QuizSettingsTab";
@@ -48,7 +49,7 @@ export default class QuizPlugin extends Plugin {
 
 		this.addSettingTab(new QuizSettingsTab(this.app, this));
 
-		this.addRibbonIcon('wallet-cards', 'Show Quiz Panel', () => {
+		this.addRibbonIcon('wallet-cards', 'Show quiz panel', () => {
 			this.activateView();
 		})
 

@@ -1,4 +1,5 @@
-import {App, Modal, setIcon} from "obsidian";
+import type {App} from "obsidian";
+import { Modal, setIcon} from "obsidian";
 
 export interface ConfirmationModalOptions {
 	title: string;
@@ -31,10 +32,12 @@ export class ConfirmationModal extends Modal {
 		})
 
 		const buttonContainer = contentEl.createEl("div");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.justifyContent = "flex-end";
-		buttonContainer.style.gap = "8px";
-		buttonContainer.style.marginTop = "36px";
+		buttonContainer.setCssProps({
+			display: "flex",
+			"justify-content": "flex-end",
+			gap: "8px",
+			"margin-top": "36px"
+		})
 
 		const cancelBtn = buttonContainer.createEl("button")
 		cancelBtn.onclick = () => {
@@ -43,7 +46,7 @@ export class ConfirmationModal extends Modal {
 		}
 		setIcon(cancelBtn, this.options.cancelIcon ? this.options.cancelIcon : "x");
 		cancelBtn.createSpan({text: this.options.cancelText});
-		cancelBtn.style.gap = "4px";
+		cancelBtn.setCssProps({ gap: "4px" });
 
 		const confirmBtn = buttonContainer.createEl("button");
 		confirmBtn.onclick = () => {
@@ -52,7 +55,7 @@ export class ConfirmationModal extends Modal {
 		}
 		setIcon(confirmBtn, this.options.confirmIcon ? this.options.confirmIcon : "trash");
 		confirmBtn.createSpan({text: this.options.confirmText});
-		confirmBtn.style.gap = "4px";
+		confirmBtn.setCssProps({ gap: "4px" });
 		confirmBtn.style.backgroundColor = this.options.confirmColor ? this.options.confirmColor : "var(--color-purple)";
 
 	}

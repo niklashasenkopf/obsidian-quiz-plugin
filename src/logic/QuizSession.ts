@@ -1,5 +1,5 @@
-import {QuizState} from "./QuizState";
-import {StoredQuiz} from "../types/storage/StoredQuiz";
+import type {QuizState} from "./QuizState";
+import type {StoredQuiz} from "../types/storage/StoredQuiz";
 
 export class QuizSession {
 	constructor(

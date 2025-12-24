@@ -1,4 +1,4 @@
-import {Difficulty} from "../types/Difficulty";
+import type {Difficulty} from "../types/Difficulty";
 
 export class QuizPromptBuilder {
 

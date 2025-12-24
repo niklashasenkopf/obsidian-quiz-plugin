@@ -1,4 +1,4 @@
-import {MCQuizDTO} from "../MCQuizDTO";
+import type {MCQuizDTO} from "../MCQuizDTO";
 
 export const mockQuiz: MCQuizDTO = {
 	questions: [

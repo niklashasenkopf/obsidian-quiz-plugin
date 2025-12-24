@@ -1,4 +1,5 @@
-import {App, Modal, Notice, setIcon, Setting} from "obsidian";
+import type {App} from "obsidian";
+import { Modal, Notice, Setting} from "obsidian";
 import {Difficulty} from "../types/Difficulty";
 
 export interface QuizGenerationOptions {
@@ -28,7 +29,7 @@ export class PreGenerationModal extends Modal {
 		this.difficulty = this.initial.difficulty;
 		this.numQuestions = this.initial.numQuestions;
 
-		this.setTitle("Quiz Generation");
+		this.setTitle("Quiz generation");
 		this.renderSettings(contentEl);
 		this.renderCost(contentEl);
 		this.renderDisclaimer(contentEl);
@@ -40,21 +41,15 @@ export class PreGenerationModal extends Modal {
 	}
 
 	renderButtons(contentEl: HTMLElement) {
-		const buttonContainer = contentEl.createEl("div");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.justifyContent = "flex-end";
-		buttonContainer.style.gap = "8px";
-		buttonContainer.style.marginTop = "36px";
+		const buttonContainer = contentEl.createEl("div", { cls: "pre-gen-buttons-container" });
 
-		const cancelBtn = buttonContainer.createEl("button")
+		const cancelBtn = buttonContainer.createEl("button", { cls: "mod-muted" })
 		cancelBtn.onclick = () => {
 			this.close();
 		}
-		cancelBtn.style.gap = "4px";
-		setIcon(cancelBtn, "x");
 		cancelBtn.createSpan({text: "Cancel"});
 
-		const confirmBtn = buttonContainer.createEl("button");
+		const confirmBtn = buttonContainer.createEl("button", { cls: "mod-cta" });
 		confirmBtn.onclick = () => {
 			this.onConfirm({
 				model: this.model,
@@ -63,10 +58,7 @@ export class PreGenerationModal extends Modal {
 			})
 			this.close()
 		}
-		setIcon(confirmBtn, "bot");
 		confirmBtn.createSpan({ text: "Generate" });
-		confirmBtn.style.gap = "4px";
-		confirmBtn.style.backgroundColor = "var(--color-purple)";
 	}
 
 	renderSettings(contentEl: HTMLElement) {
@@ -110,8 +102,7 @@ export class PreGenerationModal extends Modal {
 	}
 
 	renderCost(contentEl: HTMLElement) {
-		this.costEl = contentEl.createEl("div", { cls: "quiz-cost-estimate" });
-		this.costEl.style.marginTop = "16px";
+		this.costEl = contentEl.createEl("div", { cls: "pre-gen-quiz-cost-estimate" });
 		this.updateCostEstimate();
 	}
 
@@ -145,11 +136,7 @@ export class PreGenerationModal extends Modal {
 	}
 
 	renderDisclaimer(contentEl: HTMLElement) {
-		const disclaimer = contentEl.createEl("div");
-		disclaimer.style.marginTop = "12px";
-		disclaimer.style.fontSize = "0.9em";
-		disclaimer.style.color = "var(--text-muted)";
-
+		const disclaimer = contentEl.createEl("div", { cls: "pre-gen-disclaimer" });
 		disclaimer.setText(
 			"This action will call the OpenAI API using your personal API key. " +
 			"Any costs incurred will be billed directly to your OpenAI account."
@@ -176,7 +163,5 @@ export class PreGenerationModal extends Modal {
 	private estimateTokensFromText(text: string): number {
 		return Math.ceil(text.length / 4);
 	}
-
-
 
 }

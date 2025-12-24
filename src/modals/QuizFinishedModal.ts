@@ -1,5 +1,6 @@
-import {App, Modal, setIcon} from "obsidian";
-import {QuizSession} from "../logic/QuizSession";
+import type {App} from "obsidian";
+import { Modal, setIcon} from "obsidian";
+import type {QuizSession} from "../logic/QuizSession";
 
 export class QuizFinishedModal extends Modal {
 
@@ -16,11 +17,7 @@ export class QuizFinishedModal extends Modal {
 
 		this.setTitle("Quiz finished!");
 
-		// contentEl.createEl('h3', { text: 'Delete Quiz'});
-		const text = contentEl.createEl("div");
-		text.style.display = "flex";
-		text.style.alignItems = "center";
-		text.style.gap = "6px";
+		const text = contentEl.createEl("div", { cls: ["flex-align-center", "gap6"]});
 
 		const iconEl = text.createEl("span");
 		setIcon(iconEl, "party-popper");
@@ -29,12 +26,8 @@ export class QuizFinishedModal extends Modal {
 			text: `You scored ${this.quizSession.getScorePercent()}%`
 		});
 
-
-		const buttonContainer = contentEl.createEl("div");
-		buttonContainer.style.display = "flex";
-		buttonContainer.style.justifyContent = "flex-end";
-		buttonContainer.style.gap = "8px";
-		buttonContainer.style.marginTop = "36px";
+		const buttonContainer
+			= contentEl.createEl("div", { cls: ["flex-justify-end", "gap8", "mt36"]});
 
 		const okButton = buttonContainer.createEl("button", { text: "OK" });
 		okButton.onclick = () => {

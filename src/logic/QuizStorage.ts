@@ -1,6 +1,6 @@
-import QuizPlugin from "../../main";
-import {QuizPluginData, StoredQuiz} from "../types/storage/StoredQuiz";
-import {MCQuizDTO} from "../types/MCQuizDTO";
+import type QuizPlugin from "../../main";
+import type {QuizPluginData, StoredQuiz} from "../types/storage/StoredQuiz";
+import type {MCQuizDTO} from "../types/MCQuizDTO";
 
 export class QuizStorage {
 	private plugin: QuizPlugin;
