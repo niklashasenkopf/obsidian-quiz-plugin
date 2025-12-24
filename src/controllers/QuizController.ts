@@ -5,6 +5,7 @@ import QuizPlugin from "../../main";
 import {StoredQuiz} from "../types/storage/StoredQuiz";
 import {QuizAttemptState} from "../types/QuizAttemptState";
 import {QuizService} from "../services/QuizService";
+import {QuizGenerationOptions} from "../modals/PreGenerationModal";
 
 export class QuizController {
 	constructor(
@@ -14,7 +15,7 @@ export class QuizController {
 		private quizStorage: QuizStorage
 	) {}
 
-	async generateAndStoreQuiz(): Promise<MCQuizDTO | undefined> {
+	async generateAndStoreQuiz(options: QuizGenerationOptions): Promise<MCQuizDTO | undefined> {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (!activeFile) {
 			new Notice("Please open a file in the workspace first");
@@ -25,8 +26,8 @@ export class QuizController {
 
 		const quiz = await this.quizService.generateQuiz(
 			content,
-			this.plugin.settings.questionDifficulty,
-			this.plugin.settings.numberOfQuestions
+			options.difficulty ?? this.plugin.settings.questionDifficulty,
+			options.numQuestions ?? this.plugin.settings.numberOfQuestions
 		);
 
 		this.quizStorage.addQuiz(

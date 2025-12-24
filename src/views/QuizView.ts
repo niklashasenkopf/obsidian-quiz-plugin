@@ -8,6 +8,8 @@ import {QuizViewLayout} from "./QuizViewLayout";
 import {QuizSession} from "../logic/QuizSession";
 import {ConfirmationModal} from "../modals/ConfirmationModal";
 import {QuizFinishedModal} from "../modals/QuizFinishedModal";
+import {PreGenerationModal, QuizGenerationOptions} from "../modals/PreGenerationModal";
+import {QuizPluginSettings} from "../../main";
 
 export const QUIZ_VIEW = "quiz-view";
 
@@ -26,9 +28,14 @@ export class QuizView extends ItemView {
 	private quizSession: QuizSession | null = null;
 	private currentFilePath: string | null = null;
 
-	constructor(leaf: WorkspaceLeaf, quizController: QuizController) {
+	constructor(
+		leaf: WorkspaceLeaf,
+		quizController: QuizController,
+		private settings: QuizPluginSettings
+	) {
 		super(leaf);
-		this.quizController = quizController
+		this.quizController = quizController;
+		this.settings = settings;
 	}
 
 	getViewType(): string {
@@ -51,24 +58,7 @@ export class QuizView extends ItemView {
 		}
 
 		this.layout.generationButton.onclick = async () => {
-			const button = this.layout.generationButton;
-			button.disabled = true;
-			button.setText("Generating...");
-
-			try {
-				const quiz = await this.quizController.generateAndStoreQuiz();
-				if (quiz) {
-					new Notice(`Generated quiz with ${quiz.questions.length} questions`);
-					this.refreshDashboard();
-				}
-			} catch (err) {
-				console.error(err);
-				new Notice("Error generating quiz");
-			} finally {
-				button.disabled = false;
-				button.setText("Generate Quiz")
-			}
-
+			await this.onGenerateQuizButtonPressed();
 		}
 
 		this.quizDashboardRenderer = new QuizDashboardRenderer(
@@ -213,6 +203,41 @@ export class QuizView extends ItemView {
 		).open()
 	}
 
+	private async onGenerateQuizButtonPressed() {
+
+		new PreGenerationModal(
+			this.app,
+			{
+				model: this.settings.model,
+				difficulty: this.settings.questionDifficulty,
+				numQuestions: this.settings.numberOfQuestions
+			},
+			(options) => {
+				this.onConfirmQuizGeneration(options)
+			}
+		).open()
+	}
+
+	private async onConfirmQuizGeneration(options: QuizGenerationOptions) {
+		const button = this.layout.generationButton;
+		button.disabled = true;
+		button.setText("Generating...");
+
+		try {
+			const quiz = await this.quizController.generateAndStoreQuiz(options);
+			if (quiz) {
+				new Notice(`Generated quiz with ${quiz.questions.length} questions`);
+				this.refreshDashboard();
+			}
+		} catch (err) {
+			console.error(err);
+			new Notice("Error generating quiz");
+		} finally {
+			button.disabled = false;
+			button.setText("Generate Quiz")
+		}
+	}
+
 	private checkIfNoQuestionsAnswered(): boolean {
 		if (!this.quizSession) return true; // No quiz loaded, treat as “no answers”
 
@@ -267,4 +292,9 @@ export class QuizView extends ItemView {
 		this.quizSession?.prev();
 		this.renderSession();
 	}
+
+	private estimateTokensFromText(text: string): number {
+		return Math.ceil(text.length / 4);
+	}
+
 }
