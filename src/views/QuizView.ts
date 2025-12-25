@@ -12,6 +12,7 @@ import {QuizFinishedModal} from "../modals/QuizFinishedModal";
 import type { QuizGenerationOptions} from "../modals/PreGenerationModal";
 import {PreGenerationModal} from "../modals/PreGenerationModal";
 import type {QuizPluginSettings} from "../../main";
+import {EditQuizModal} from "../modals/EditQuizModal";
 
 export const QUIZ_VIEW = "quiz-view";
 
@@ -66,7 +67,7 @@ export class QuizView extends ItemView {
 		this.quizDashboardRenderer = new QuizDashboardRenderer(
 			this.layout.dashboardContainer,
 			(quiz) => this.startStoredQuiz(quiz),
-			(quiz) => this.deleteStoredQuiz(quiz)
+			(quiz) => this.editStoredQuiz(quiz)
 		)
 
 		this.quizRenderer = new QuizRenderer(
@@ -86,8 +87,6 @@ export class QuizView extends ItemView {
 			})
 		)
 
-		// this.loadedQuiz = mockQuiz
-		// this.displayQuiz(this.loadedQuiz);
 		this.setMode(QuizViewMode.Dashboard);
 		this.refreshDashboard();
 	}
@@ -152,7 +151,7 @@ export class QuizView extends ItemView {
 		this.renderSession();
 	}
 
-	private deleteStoredQuiz(storedQuiz: StoredQuiz) {
+	private confirmDelete(storedQuiz: StoredQuiz, editModal: EditQuizModal) {
 		new ConfirmationModal(
 			this.app,
 			{
@@ -160,16 +159,33 @@ export class QuizView extends ItemView {
 				message: "Are you sure that you want to delete the selected quiz?",
 				confirmText: "Delete",
 				cancelText: "Cancel",
-				confirmIcon: "trash",
 				confirmColor: "var(--color-red)",
-				cancelIcon: "x",
 				onConfirm: () => {
 					this.quizController.deleteStoredQuiz(storedQuiz);
-					this.refreshDashboard();
+
+					editModal.close();
 					new Notice("Quiz deleted successfully");
+
+					this.refreshDashboard();
+				},
+				onCancel: () => {
+					// Do nothing since we want the edit modal to stay open
 				}
 			}
 		).open();
+	}
+
+	private editStoredQuiz(storedQuiz: StoredQuiz) {
+		const editModal = new EditQuizModal(
+			this.app,
+			storedQuiz,
+			(quizId, updatedQuiz) => {
+				this.quizController.updateQuiz(quizId, updatedQuiz)
+			},
+			(quiz) => this.confirmDelete(quiz, editModal)
+		);
+
+		editModal.open();
 	}
 
 	private onReturnToDashboardPressed() {
@@ -185,9 +201,7 @@ export class QuizView extends ItemView {
 				title: "Save Progress ?",
 				message: "You didn't answer all questions of this quiz yet. Do you want to save your progress?",
 				confirmText: "Save",
-				confirmIcon: "save",
 				cancelText: "Don't save",
-				cancelIcon: "x",
 				onConfirm: () => {
 					if (!this.quizSession) return;
 					this.quizController.saveInProgressAttempt(

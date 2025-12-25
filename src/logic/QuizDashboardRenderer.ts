@@ -6,7 +6,7 @@ export class QuizDashboardRenderer {
 	constructor(
 		private readonly container: HTMLElement,
 		private onStartQuiz: (quiz: StoredQuiz) => void,
-		private onDeleteQuiz: (quiz: StoredQuiz) => void
+		private onEditQuiz: (quiz: StoredQuiz) => void
 		) {}
 
 	render(quizzes: StoredQuiz[]) {
@@ -55,7 +55,7 @@ export class QuizDashboardRenderer {
 				day: "numeric"
 			});
 			const createdAt
-				= container1.createEl("div", { cls: ["flex-align-center", "gap4"] });
+				= container1.createEl("div", { cls: ["flex-align-center", "gap-4"] });
 			setIcon(createdAt, "calendar");
 			createdAt.createSpan({ text: `${formattedDate}`})
 
@@ -72,26 +72,20 @@ export class QuizDashboardRenderer {
 			}
 			container2.createEl("p", { text: `${text}`, cls: "status"})
 
-			const buttonsContainer = item.createEl("div");
-			buttonsContainer.setCssProps({
-				display: "flex",
-				"align-items": "center",
-				"justify-content": "space-between"
-			});
+			const buttonsContainer
+				= item.createEl("div", { cls: ["flex-align-center", "flex-justify-between"]});
 
 			const playButton
-				= buttonsContainer.createEl("button", { cls: ["gap4", "mod-cta"] });
-			setIcon(playButton, "play");
-			playButton.createSpan({
-				text: quiz.attempt?.inProgress ? "Resume" : "Take"
-			});
+				= buttonsContainer.createEl(
+					"button", {
+						text: quiz.attempt?.inProgress ? "Resume" : "Take" ,
+						cls: ["gap-4", "mod-cta"]
+					});
 			playButton.onclick = () => this.onStartQuiz(quiz);
 
-			const deleteButton
-				= buttonsContainer.createEl("button", { cls: ["gap4", "mod-warning"] });
-			setIcon(deleteButton, "trash");
-			deleteButton.createSpan({text: "Delete"});
-			deleteButton.onclick = () => this.onDeleteQuiz(quiz);
+			const editButton
+				= buttonsContainer.createEl("button", { text: "Edit" ,cls: ["gap-4", "mod-muted"]})
+			editButton.onclick = () => this.onEditQuiz(quiz);
 		})
 	}
 }

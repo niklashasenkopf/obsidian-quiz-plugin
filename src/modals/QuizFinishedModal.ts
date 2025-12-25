@@ -17,7 +17,7 @@ export class QuizFinishedModal extends Modal {
 
 		this.setTitle("Quiz finished!");
 
-		const text = contentEl.createEl("div", { cls: ["flex-align-center", "gap6"]});
+		const text = contentEl.createEl("div", { cls: ["flex-align-center", "gap-6"]});
 
 		const iconEl = text.createEl("span");
 		setIcon(iconEl, "party-popper");
@@ -27,7 +27,7 @@ export class QuizFinishedModal extends Modal {
 		});
 
 		const buttonContainer
-			= contentEl.createEl("div", { cls: ["flex-justify-end", "gap8", "mt36"]});
+			= contentEl.createEl("div", { cls: ["flex-justify-end", "gap-8", "mt-36"]});
 
 		const okButton = buttonContainer.createEl("button", { text: "OK" });
 		okButton.onclick = () => {

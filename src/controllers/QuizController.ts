@@ -74,4 +74,16 @@ export class QuizController {
 			}
 		})
 	}
+
+	updateQuiz(
+		quizId: string,
+		updatedQuiz: MCQuizDTO
+	): void {
+		this.quizStorage.updateQuiz(quizId, quiz => {
+			quiz.quiz = structuredClone(updatedQuiz);
+
+			// Clear in progress attempts if structure changed
+			if (quiz.attempt?.inProgress) quiz.attempt.inProgress = undefined;
+		})
+	}
 }
